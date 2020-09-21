@@ -1,0 +1,682 @@
+procedure start;
+
+variable SrcObj;
+variable SrcIsParty;
+
+procedure Critter_Action;
+procedure damage_p_proc;
+procedure description_p_proc;
+procedure destroy_p_proc;
+procedure talk_p_proc;
+procedure look_at_p_proc;
+procedure gwen00;
+procedure gwen01;
+procedure gwen02;
+procedure gwen03;
+procedure gwen04;
+procedure gwen05;
+procedure gwen06;
+procedure gwen07;
+procedure gwen08;
+procedure gwen10;
+procedure gwenC;
+procedure gwenend;
+procedure combat;
+procedure BigDownReact;
+procedure BigUpReact;
+procedure BottomReact;
+procedure DownReact;
+procedure DownReactLevel;
+procedure get_reaction;
+procedure Goodbyes;
+procedure LevelToReact;
+procedure ReactToLevel;
+procedure TopReact;
+procedure UpReact;
+procedure UpReactLevel;
+procedure PickDeadBodyType;
+
+variable DeathType := 56;
+variable exit_line;
+variable hostile;
+variable Only_Once := 1;
+variable rndz;
+
+
+procedure start begin
+   variable LVar0 := 0;
+   if (global_var(12)) then begin
+      if (cur_map_index == 24) then begin
+         if (local_var(6) != 1) then begin
+            set_local_var(6, 1);
+            call PickDeadBodyType();
+            kill_critter(self_obj, DeathType);
+         end
+      end
+   end
+   else begin
+      if (local_var(12) != 1) then begin
+         if (metarule(14, 0)) then begin
+            if (metarule(22, 0) == 0) then begin
+               if (get_critter_stat(self_obj, 7) > 0) then begin
+                  critter_heal(self_obj, 999);
+               end
+               if (global_var(330)) then begin
+                  if (critter_inven_obj(self_obj, 0) <= 0) then begin
+                     if (obj_carrying_pid_obj(self_obj, 17)) then begin
+                        debug_msg("Fallout Fixt - Warning: CRITTER " + obj_pid(self_obj) + " HAD ARMOR BUT EMPTY ARMOR SLOT. EQUIPPING COMBAT ARMOR...");
+                        LVar0 := obj_carrying_pid_obj(self_obj, 17);
+                        rm_obj_from_inven(self_obj, LVar0);
+                        add_obj_to_inven(self_obj, LVar0);
+                        wield_obj_critter(self_obj, LVar0);
+                     end
+                     else begin
+                        if (obj_carrying_pid_obj(self_obj, 2)) then begin
+                           debug_msg("Fallout Fixt - Warning: CRITTER " + obj_pid(self_obj) + " HAD ARMOR BUT EMPTY ARMOR SLOT. EQUIPPING METAL ARMOR...");
+                           LVar0 := obj_carrying_pid_obj(self_obj, 2);
+                           rm_obj_from_inven(self_obj, LVar0);
+                           add_obj_to_inven(self_obj, LVar0);
+                           wield_obj_critter(self_obj, LVar0);
+                        end
+                        else begin
+                           if (obj_carrying_pid_obj(self_obj, 1)) then begin
+                              debug_msg("Fallout Fixt - Warning: CRITTER " + obj_pid(self_obj) + " HAD ARMOR BUT EMPTY ARMOR SLOT. EQUIPPING LEATHER ARMOR...");
+                              LVar0 := obj_carrying_pid_obj(self_obj, 1);
+                              rm_obj_from_inven(self_obj, LVar0);
+                              add_obj_to_inven(self_obj, LVar0);
+                              wield_obj_critter(self_obj, LVar0);
+                           end
+                           else begin
+                              if (obj_carrying_pid_obj(self_obj, 74)) then begin
+                                 debug_msg("Fallout Fixt - Warning: CRITTER " + obj_pid(self_obj) + " HAD ARMOR BUT EMPTY ARMOR SLOT. EQUIPPING LEATHER JACKET...");
+                                 LVar0 := obj_carrying_pid_obj(self_obj, 74);
+                                 rm_obj_from_inven(self_obj, LVar0);
+                                 add_obj_to_inven(self_obj, LVar0);
+                                 wield_obj_critter(self_obj, LVar0);
+                              end
+                              else begin
+                                 if (obj_carrying_pid_obj(self_obj, 113)) then begin
+                                    debug_msg("Fallout Fixt - Warning: CRITTER " + obj_pid(self_obj) + " HAD ARMOR BUT EMPTY ARMOR SLOT. EQUIPPING ROBES...");
+                                    LVar0 := obj_carrying_pid_obj(self_obj, 113);
+                                    rm_obj_from_inven(self_obj, LVar0);
+                                    add_obj_to_inven(self_obj, LVar0);
+                                    wield_obj_critter(self_obj, LVar0);
+                                 end
+                              end
+                           end
+                        end
+                     end
+                  end
+               end
+               set_local_var(12, 1);
+            end
+         end
+      end
+      if (Only_Once) then begin
+         Only_Once := 0;
+         critter_add_trait(self_obj, 1, 6, 6);
+         critter_add_trait(self_obj, 1, 5, 20);
+         debug_msg("GWEN init.");
+      end
+      if (script_action == 21) then begin
+         call look_at_p_proc();
+      end
+      else begin
+         if (script_action == 3) then begin
+            call description_p_proc();
+         end
+         else begin
+            if (script_action == 11) then begin
+               call talk_p_proc();
+            end
+            else begin
+               if (script_action == 4) then begin
+                  hostile := 1;
+               end
+               else begin
+                  if (script_action == 12) then begin
+                     call Critter_Action();
+                  end
+                  else begin
+                     if (script_action == 14) then begin
+                        call damage_p_proc();
+                     end
+                     else begin
+                        if (script_action == 18) then begin
+                           call destroy_p_proc();
+                        end
+                     end
+                  end
+               end
+            end
+         end
+      end
+   end
+end
+
+procedure Critter_Action begin
+   variable LVar0 := 0;
+   if (global_var(26) == 2) then begin
+      set_global_var(254, 1);
+   end
+   else begin
+      if (global_var(116)) then begin
+         rndz := random(0, 500);
+         set_global_var(254, 0);
+         if ((tile_distance_objs(self_obj, dude_obj) < 5) and (rndz == 0)) then begin
+            LVar0 := tile_num_in_direction(tile_num(self_obj), random(0, 5), 3);
+            if ((tile_distance(tile_num(self_obj), LVar0) > 2) and (rndz == 0)) then begin
+               if (rndz == 0) then begin
+                  float_msg(self_obj, message_str(136, random(102, 106)), 8);
+               end
+               animate_move_obj_to_tile(self_obj, LVar0, 0);
+            end
+         end
+      end
+      else begin
+         if (global_var(213)) then begin
+            set_global_var(254, 1);
+         end
+         if (obj_can_see_obj(self_obj, dude_obj)) then begin
+            if (global_var(214)) then begin
+               set_global_var(254, 1);
+            end
+         end
+         if (map_var(2) == 1) then begin
+            set_global_var(254, 1);
+         end
+      end
+   end
+   if (global_var(254) and obj_can_see_obj(self_obj, dude_obj)) then begin
+      hostile := 1;
+   end
+   if (tile_distance_objs(self_obj, dude_obj) > 12) then begin
+      hostile := 0;
+   end
+   if (hostile) then begin
+      hostile := 0;
+      set_global_var(254, 1);
+      attack_complex(dude_obj, 0, 1, 0, 0, 30000, 0, 0);
+   end
+end
+
+procedure damage_p_proc begin
+   if (source_obj > 0) then begin
+      SrcObj := 0;
+      SrcIsParty := 0;
+      SrcObj := obj_pid(source_obj);
+      if (party_member_obj(SrcObj)) then begin
+         SrcIsParty := 1;
+      end
+   end
+   if ((source_obj == dude_obj) or (SrcIsParty == 1)) then begin
+      if (global_var(116) == 0) then begin
+         set_global_var(254, 1);
+      end
+   end
+end
+
+procedure description_p_proc begin
+   if (local_var(7)) then begin
+      script_overrides;
+      display_msg(message_str(141, 200));
+   end
+end
+
+procedure destroy_p_proc begin
+   variable LVar0 := 0;
+   variable LVar1 := 0;
+   variable LVar2 := 0;
+   variable LVar3 := 0;
+   variable LVar4 := 0;
+   variable LVar5 := 0;
+   variable LVar6 := 0;
+   variable LVar7 := 0;
+   variable LVar8 := 0;
+   set_global_var(115, global_var(115) - 1);
+   if (source_obj > 0) then begin
+      SrcObj := 0;
+      SrcIsParty := 0;
+      SrcObj := obj_pid(source_obj);
+      if (party_member_obj(SrcObj)) then begin
+         SrcIsParty := 1;
+      end
+   end
+   if ((source_obj == dude_obj) or (SrcIsParty == 1)) then begin
+      set_global_var(254, 1);
+      set_global_var(611, 0);
+   end
+   if (global_var(460) and not(global_var(0)) and (critter_inven_obj(self_obj, 1) or critter_inven_obj(self_obj, 2))) then begin
+      if (global_var(325)) then begin
+         debug_msg("Weapon Drop BEGINS");
+      end
+      if (critter_inven_obj(self_obj, 1) > 0) then begin
+         LVar0 := critter_inven_obj(self_obj, 1);
+      end
+      if (critter_inven_obj(self_obj, 2) > 0) then begin
+         LVar1 := critter_inven_obj(self_obj, 2);
+      end
+      if (critter_inven_obj(self_obj, 0) > 0) then begin
+         LVar2 := critter_inven_obj(self_obj, 0);
+      end
+      if (LVar0) then begin
+         LVar3 := obj_pid(LVar0);
+      end
+      if (LVar1) then begin
+         LVar4 := obj_pid(LVar1);
+      end
+      if (LVar2) then begin
+         LVar5 := obj_pid(LVar2);
+      end
+      LVar6 := tile_num_in_direction(tile_num(self_obj), random(0, 5), random(global_var(461), global_var(462)));
+      if ((LVar3 != 19) and (LVar3 != 21) and (LVar3 != 79) and (LVar3 != 205) and (LVar3 != 234) and (LVar3 != 235) and (LVar3 != 244) and (LVar4 != 19) and (LVar4 != 21) and (LVar4 != 79) and (LVar4 != 205) and (LVar4 != 234) and (LVar4 != 235) and (LVar4 != 244)) then begin
+         if (LVar0 > 0) then begin
+            if (obj_item_subtype(LVar0) == 3) then begin
+               rm_obj_from_inven(self_obj, LVar0);
+               move_to(LVar0, LVar6, elevation(self_obj));
+            end
+         end
+         if (LVar1 > 0) then begin
+            if (obj_item_subtype(LVar1) == 3) then begin
+               rm_obj_from_inven(self_obj, LVar1);
+               move_to(LVar1, LVar6, elevation(self_obj));
+            end
+         end
+         if (global_var(325)) then begin
+            debug_msg("Weapon Drop ENDS");
+         end
+      end
+   end
+   if (source_obj == dude_obj) then begin
+      set_global_var(160, global_var(160) + 1);
+      if (((global_var(160) + global_var(159)) >= 25) and ((global_var(159) > (2 * global_var(160))) or (global_var(317) == 1))) then begin
+         set_global_var(317, 1);
+         set_global_var(157, 0);
+      end
+      if (((global_var(160) + global_var(159)) >= 25) and ((global_var(160) > (3 * global_var(159))) or (global_var(157) == 1))) then begin
+         set_global_var(157, 1);
+         set_global_var(317, 0);
+      end
+      if ((global_var(160) % 6) == 0) then begin
+         set_global_var(155, global_var(155) + 1);
+      end
+   end
+   if (global_var(329)) then begin
+      if (critter_inven_obj(self_obj, 0) > 0) then begin
+         LVar7 := critter_inven_obj(self_obj, 0);
+         rm_obj_from_inven(self_obj, LVar7);
+         destroy_object(LVar7);
+      end
+      else begin
+         LVar8 := obj_carrying_pid_obj(self_obj, 74);
+         if (LVar8 > 0) then begin
+            rm_obj_from_inven(self_obj, LVar8);
+            destroy_object(LVar8);
+         end
+         else begin
+            LVar8 := obj_carrying_pid_obj(self_obj, 1);
+            if (LVar8 > 0) then begin
+               rm_obj_from_inven(self_obj, LVar8);
+               destroy_object(LVar8);
+            end
+            else begin
+               LVar8 := obj_carrying_pid_obj(self_obj, 113);
+               if (LVar8 > 0) then begin
+                  rm_obj_from_inven(self_obj, LVar8);
+                  destroy_object(LVar8);
+               end
+               else begin
+                  LVar8 := obj_carrying_pid_obj(self_obj, 2);
+                  if (LVar8 > 0) then begin
+                     rm_obj_from_inven(self_obj, LVar8);
+                     destroy_object(LVar8);
+                  end
+                  else begin
+                     LVar8 := obj_carrying_pid_obj(self_obj, 17);
+                     if (LVar8 > 0) then begin
+                        rm_obj_from_inven(self_obj, LVar8);
+                        destroy_object(LVar8);
+                     end
+                     else begin
+                        LVar8 := obj_carrying_pid_obj(self_obj, 239);
+                        if (LVar8 > 0) then begin
+                           rm_obj_from_inven(self_obj, LVar8);
+                           destroy_object(LVar8);
+                        end
+                        else begin
+                           LVar8 := obj_carrying_pid_obj(self_obj, 3);
+                           if (LVar8 > 0) then begin
+                              rm_obj_from_inven(self_obj, LVar8);
+                              destroy_object(LVar8);
+                           end
+                           else begin
+                              LVar8 := obj_carrying_pid_obj(self_obj, 232);
+                              if (LVar8 > 0) then begin
+                                 rm_obj_from_inven(self_obj, LVar8);
+                                 destroy_object(LVar8);
+                              end
+                              else begin
+                                 LVar8 := obj_carrying_pid_obj(self_obj, 240);
+                                 if (LVar8 > 0) then begin
+                                    rm_obj_from_inven(self_obj, LVar8);
+                                    destroy_object(LVar8);
+                                 end
+                              end
+                           end
+                        end
+                     end
+                  end
+               end
+            end
+         end
+      end
+   end
+end
+
+procedure talk_p_proc begin
+   anim(dude_obj, 1000, rotation_to_tile(tile_num(dude_obj), tile_num(self_obj)));
+   if (global_var(116) == 1) then begin
+      float_msg(self_obj, message_str(136, random(102, 106)), 8);
+   end
+   else begin
+      set_local_var(3, 1);
+      call get_reaction();
+      start_gdialog(141, self_obj, 4, -1, -1);
+      gsay_start;
+      if (global_var(611)) then begin
+         set_local_var(4, 0); //If a friend of Garl, Gwen will not dismiss you
+         call gwenC();
+      end
+      else if (local_var(4) == 5) then begin
+         call gwen10();
+      end
+      else begin
+         set_local_var(4, local_var(4) + 1);
+         call gwen00();
+      end
+      gsay_end;
+      end_dialogue;
+   end
+end
+
+procedure look_at_p_proc begin
+   script_overrides;
+   if (not(local_var(7))) then begin
+      display_msg(message_str(141, 100));
+   end
+   else begin
+      display_msg(message_str(141, 200));
+   end
+end
+
+procedure gwen00 begin
+   set_local_var(7, 1);
+   gsay_reply(141, 101);
+   giq_option(4, 141, message_str(141, 102) + proto_data(obj_pid(dude_obj), 1) + message_str(141, 103), gwen01, 50);
+   giq_option(7, 141, 104, gwen02, 50);
+   giq_option(-3, 141, 105, gwen03, 50);
+   if (get_critter_stat(dude_obj, 34) == 0) then begin
+      giq_option(4, 141, 106, gwen07, 50);
+   end
+   set_local_var(7, 1);
+end
+
+procedure gwen01 begin
+   gsay_reply(141, 107);
+   giq_option(4, 141, 108, gwen04, 50);
+   giq_option(4, 141, 109, gwen08, 50);
+   giq_option(4, 141, 110, gwen05, 50);
+   giq_option(4, 141, 111, gwen06, 50);
+end
+
+procedure gwen02 begin
+   gsay_message(141, 112, 50);
+end
+
+procedure gwen03 begin
+   gsay_message(141, 113, 50);
+end
+
+procedure gwen04 begin
+   gsay_reply(141, 114);
+   giq_option(4, 141, 115, gwenend, 50);
+   giq_option(4, 141, 116, combat, 50);
+   giq_option(4, 141, 117, combat, 50);
+end
+
+procedure gwen05 begin
+   gsay_message(141, 118, 50);
+   call combat();
+end
+
+procedure gwen06 begin
+   gsay_message(141, 119, 50);
+   call combat();
+end
+
+procedure gwen07 begin
+   gsay_message(141, 120, 50);
+   call combat();
+end
+
+procedure gwen08 begin
+   gsay_message(141, 121, 50);
+   call combat();
+end
+
+procedure gwen10 begin
+   gsay_message(141, 122, 50);
+end
+
+procedure gwen11 begin
+   gsay_message(141, "Talk to Alya about that.", 50);
+end
+
+procedure gwen12 begin
+   gsay_message(141, "Bring Tolya ten pieces of food, and keep 'em coming.", 50);
+end
+
+procedure rally begin
+   //set_global_var(156, 1);
+   if global_var(156) == 1 or global_var(155) <= -25 then begin
+      if party_member_obj(16777291) == 0 then begin
+        //variable raider := create_object_sid(16777291, 0, 0, 136); //Raider with the generic raider script
+        variable raider := create_object_sid(16777291, 0, 0, 235); //Raider with Ian's script
+        variable spear := create_object_sid(7, 0, 0, -1); //Use -1 for weapon script ids
+        critter_attempt_placement(raider, tile_num_in_direction(tile_num(dude_obj), 0, 1), elevation(dude_obj));
+        add_obj_to_inven(raider, spear);
+        wield_obj_critter(raider, spear);
+        party_add(raider);
+        display_msg("A raider has joined the party");
+      end
+      else if party_member_obj(16777286) == 0 then begin //Raider guard pid
+        //variable raider2 := create_object_sid(16777286, 0, 0, 136); //Raider with the generic raider script
+        variable raider2 := create_object_sid(16777286, 0, 0, 235); //Raider with Ian's script
+        variable spear2 := create_object_sid(7, 0, 0, -1);
+        critter_attempt_placement(raider2, tile_num_in_direction(tile_num(dude_obj), 0, 1), elevation(dude_obj));
+        add_obj_to_inven(raider2, spear2);
+        wield_obj_critter(raider2, spear2);
+        party_add(raider2);
+        display_msg("A raider has joined the party");
+      end
+      else begin
+         gsay_message(141, "I can spare no more men. Leave", 50);
+      end
+   end
+   else begin
+      gsay_message(141, "My men will follow no less than a berserker.", 50);
+   end
+end
+
+procedure gwenC begin
+   gsay_reply(141, "Say what you will or get out of my face, fellow Khan.");
+   giq_option(4, 141, "I would like to join up in a raid.", gwen11, 50);
+   giq_option(4, 141, "How can I help out?", gwen12, 50);
+   giq_option(4, 141, "I would like a Khan to join me.", rally, 50);
+   giq_option(4, 141, "Nevermind.", gwen10, 50);
+end
+
+procedure gwenend begin
+end
+
+procedure combat begin
+   if (global_var(116) == 1) then begin
+      critter_add_trait(self_obj, 1, 6, 87);
+   end
+   hostile := 1;
+end
+
+procedure BigDownReact begin
+   set_local_var(0, local_var(0) - 25);
+   call ReactToLevel();
+end
+
+procedure BigUpReact begin
+   set_local_var(0, local_var(0) + 25);
+   call ReactToLevel();
+end
+
+procedure BottomReact begin
+   set_local_var(1, 1);
+   set_local_var(0, 1);
+end
+
+procedure DownReact begin
+   set_local_var(0, local_var(0) - 10);
+   call ReactToLevel();
+end
+
+procedure DownReactLevel begin
+   set_local_var(1, local_var(1) - 1);
+   if (local_var(1) < 1) then begin
+      set_local_var(1, 1);
+   end
+   call LevelToReact();
+end
+
+procedure get_reaction begin
+   if (local_var(2) == 0) then begin
+      set_local_var(0, 50);
+      set_local_var(1, 2);
+      set_local_var(2, 1);
+      set_local_var(0, local_var(0) + (5 * get_critter_stat(dude_obj, 3)) - 25);
+      set_local_var(0, local_var(0) + (10 * has_trait(0, dude_obj, 10)));
+      if (has_trait(0, dude_obj, 39)) then begin
+         if (global_var(155) > 0) then begin
+            set_local_var(0, local_var(0) + global_var(155));
+         end
+         else begin
+            set_local_var(0, local_var(0) - global_var(155));
+         end
+      end
+      else begin
+         if (local_var(3) == 1) then begin
+            set_local_var(0, local_var(0) - global_var(155));
+         end
+         else begin
+            set_local_var(0, local_var(0) + global_var(155));
+         end
+      end
+      if (global_var(158) >= global_var(545)) then begin
+         set_local_var(0, local_var(0) - 30);
+      end
+      if (((global_var(160) + global_var(159)) >= 25) and ((global_var(160) > (3 * global_var(159))) or (global_var(157) == 1))) then begin
+         set_local_var(0, local_var(0) + 20);
+      end
+      if (((global_var(160) + global_var(159)) >= 25) and ((global_var(159) > (2 * global_var(160))) or (global_var(317) == 1))) then begin
+         set_local_var(0, local_var(0) - 20);
+      end
+      call ReactToLevel();
+   end
+end
+
+procedure Goodbyes begin
+   exit_line := message_str(634, random(100, 105));
+end
+
+procedure LevelToReact begin
+   if (local_var(1) == 1) then begin
+      set_local_var(0, random(1, 25));
+   end
+   else begin
+      if (local_var(1) == 2) then begin
+         set_local_var(0, random(26, 75));
+      end
+      else begin
+         set_local_var(0, random(76, 100));
+      end
+   end
+end
+
+procedure ReactToLevel begin
+   if (local_var(0) <= 25) then begin
+      set_local_var(1, 1);
+   end
+   else begin
+      if (local_var(0) <= 75) then begin
+         set_local_var(1, 2);
+      end
+      else begin
+         set_local_var(1, 3);
+      end
+   end
+end
+
+procedure TopReact begin
+   set_local_var(0, 100);
+   set_local_var(1, 3);
+end
+
+procedure UpReact begin
+   set_local_var(0, local_var(0) + 10);
+   call ReactToLevel();
+end
+
+procedure UpReactLevel begin
+   set_local_var(1, local_var(1) + 1);
+   if (local_var(1) > 3) then begin
+      set_local_var(1, 3);
+   end
+   call LevelToReact();
+end
+
+procedure PickDeadBodyType begin
+   variable LVar0 := 0;
+   variable LVar1 := 0;
+   LVar0 := random(0, 6) + random(0, 6) + random(0, 6);
+   if (LVar0 <= 5) then begin
+      DeathType := 57;
+   end
+   else begin
+      if (LVar0 <= 10) then begin
+         DeathType := 56;
+      end
+      else begin
+         if (LVar0 <= 14) then begin
+            DeathType := 53;
+         end
+         else begin
+            if (LVar0 <= 16) then begin
+               DeathType := 63;
+            end
+            else begin
+               LVar1 := random(0, 2);
+               if (LVar1 == 0) then begin
+                  DeathType := 54;
+               end
+               else begin
+                  if (LVar1 == 1) then begin
+                     DeathType := 59;
+                  end
+                  else begin
+                     if (LVar1 == 2) then begin
+                        DeathType := 60;
+                     end
+                  end
+               end
+            end
+         end
+      end
+   end
+end
+
